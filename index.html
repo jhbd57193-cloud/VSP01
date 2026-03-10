@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ВСП: ЦЕНТРАЛЬНА СИСТЕМА</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --gold: #f59e0b;
+            --accent: #06b6d4;
+            --danger: #ef4444;
+            --text: #f8fafc;
+        }
+
+        body { 
+            font-family: 'Ubuntu', sans-serif; 
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            color: var(--text); margin: 0; display: flex; min-height: 100vh; overflow-x: hidden;
+        }
+
+        /* Ефект CRT монітора */
+        body::after {
+            content: ""; position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px; z-index: 1000; pointer-events: none; opacity: 0.3;
+        }
+
+        /* Анімація герба */
+        @keyframes emblemPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; filter: drop-shadow(0 0 10px var(--gold)); }
+            50% { transform: translate(-50%, -50%) scale(1.03); opacity: 0.2; filter: drop-shadow(0 0 30px var(--gold)); }
+        }
+
+        .vsp-emblem {
+            position: fixed; top: 60%; left: 55%; transform: translate(-50%, -50%);
+            width: 550px; height: 550px;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Military_Law_Enforcement_Service_of_Ukraine_Emblem.svg/1200px-Military_Law_Enforcement_Service_of_Ukraine_Emblem.svg.png') no-repeat center;
+            background-size: contain; animation: emblemPulse 8s infinite ease-in-out; z-index: -1;
+        }
+
+        /* Sidebar */
+        .sidebar { 
+            width: 280px; background: rgba(15, 23, 42, 0.95); height: 100vh; position: fixed; 
+            border-right: 1px solid rgba(245, 158, 11, 0.3); backdrop-filter: blur(10px); z-index: 100;
+        }
+        .logo-box { padding: 40px 20px; text-align: center; border-bottom: 2px solid var(--gold); }
+
+        .nav-item { 
+            padding: 20px 30px; cursor: pointer; transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.02);
+            display: flex; align-items: center; opacity: 0.6; font-weight: 700;
+        }
+        .nav-item:hover, .nav-item.active { opacity: 1; background: rgba(245, 158, 11, 0.1); color: var(--gold); border-left: 6px solid var(--gold); }
+
+        /* Main */
+        .main { margin-left: 280px; padding: 40px; width: calc(100% - 280px); box-sizing: border-box; }
+
+        .card { 
+            background: var(--bg-card); border-radius: 20px; padding: 30px; margin-bottom: 20px; 
+            border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(15px); transition: 0.4s;
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn { 
+            background: var(--gold); color: #000; border: none; padding: 14px 25px; cursor: pointer; 
+            font-weight: 900; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 11px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); margin-right: 10px;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px var(--gold); background: #fff; }
+        .btn-danger { background: var(--danger); color: white; padding: 8px 15px; }
+
+        /* Таблиці */
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; padding: 10px 15px; color: var(--gold); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 18px 15px; background: rgba(255,255,255,0.03); transition: 0.3s; border-top: 1px solid rgba(255,255,255,0.05); }
+        tr:hover td { background: rgba(6, 182, 212, 0.1); color: var(--accent); }
+
+        /* Auth */
+        #authScreen { position: fixed; inset: 0; background: var(--bg-deep); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .auth-box { background: var(--bg-card); padding: 50px; border-radius: 25px; width: 350px; text-align: center; border: 1px solid var(--gold); }
+        input, textarea { width: 100%; padding: 14px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; font-family: inherit; }
+
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(10px); }
+        .modal-box { background: var(--bg-card); padding: 40px; width: 450px; border-radius: 20px; border: 1px solid var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div id="authScreen">
+        <div class="auth-box">
+            <h1 style="font-family: Montserrat; color: var(--gold); letter-spacing: 5px;">В С П</h1>
+            <p style="font-size: 11px; opacity: 0.5; margin-bottom: 30px;">ВІЙСЬКОВА СЛУЖБА ПРАВОПОРЯДКУ</p>
+            <input id="uL" placeholder="ЛОГІН">
+            <input id="uP" type="password" placeholder="ПАРОЛЬ">
+            <button class="btn" style="width:100%; margin-top:20px" onclick="core.login()">УВІЙТИ</button>
+            <p onclick="core.reg()" style="cursor:pointer; font-size:10px; margin-top:25px; opacity:0.3;">Реєстрація жетона</p>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="logo-box">
+            <h2 style="font-family: Montserrat; margin:0; color:var(--gold);">ВСП // СИСТЕМА</h2>
+            <div id="uLabel" style="font-size:10px; color:var(--accent); margin-top:10px; font-weight: bold;"></div>
+        </div>
+        <div class="nav-item active" onclick="core.nav('home', this)">🖥 ГОЛОВНА</div>
+        <div class="nav-item" onclick="core.nav('sol', this)">👥 БІЙЦІ</div>
+        <div class="nav-item" onclick="core.nav('patrol', this)">🛡 ПАТРУЛІ</div>
+        <div class="nav-item" onclick="core.nav('crime', this)">⚠️ ПОРУШЕННЯ</div>
+        <div id="admMenu" class="nav-item" style="display:none; color: var(--gold);" onclick="core.nav('adm', this)">⚙️ КЕРУВАННЯ</div>
+        <div class="nav-item" style="margin-top:auto; color:var(--danger);" onclick="location.reload()">ВИХІД</div>
+    </div>
+
+    <div class="main">
+        <div class="vsp-emblem"></div>
+
+        <div id="s-home" class="section">
+            <div class="card" style="border-left: 5px solid var(--gold);">
+                <h1 style="font-family: Montserrat; margin:0;">МОНІТОРИНГ ПІДРОЗДІЛУ</h1>
+                <p style="opacity:0.6;">Автоматизоване робоче місце чергового ВСП.</p>
+                <div style="margin-top:25px;">
+                    <button class="btn" onclick="core.openM('m-sol')">+ Новий БІЄЦЬ</button>
+                    <button class="btn" onclick="core.openM('m-patrol')" style="background:var(--accent); color:#000;">🛡 Звіт Патруля</button>
+                    <button class="btn" onclick="core.openM('m-crime')" style="background:var(--danger); color:#fff;">⚠️ Фіксація</button>
+                </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                <div class="card" style="text-align:center;">БІЙЦІ <span id="v1" style="font-size:35px; display:block; color:var(--gold);">0</span></div>
+                <div class="card" style="text-align:center;">ПАТРУЛІ <span id="v2" style="font-size:35px; display:block; color:var(--accent);">0</span></div>
+                <div class="card" style="text-align:center;">ПОРУШЕННЯ <span id="v3" style="font-size:35px; display:block; color:var(--danger);">0</span></div>
+                <div class="card" style="text-align:center;">СТАТУС <span style="font-size:20px; display:block; color:var(--accent); margin-top:10px;">ONLINE</span></div>
+            </div>
+        </div>
+
+        <div id="s-sol" class="section" style="display:none;"><div class="card"><h2>РЕЄСТР БІЙЦІВ</h2><table id="tSol"><thead><tr><th>ПІБ БІЙЦЯ</th><th>Звання</th><th>Посада</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+        <div id="s-patrol" class="section" style="display:none;"><div class="card"><h2>ЗВІТИ ПАТРУЛІВ (7 ДНІВ)</h2><table id="tPatrol"><thead><tr><th>Час</th><th>Склад</th><th>Маршрут</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+        <div id="s-crime" class="section" style="display:none;"><div class="card"><h2>КАНАЛ ПРАВОПОРУШЕНЬ</h2><table id="tCrime"><thead><tr><th>Дата</th><th>Об'єкт</th><th>Суть</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+        <div id="s-adm" class="section" style="display:none;"><div class="card"><h2>ПЕРСОНАЛ СИСТЕМИ</h2><table id="tUsers"><thead><tr><th>Логін</th><th>Роль</th><th>Статус</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+
+    <div id="m-sol" class="modal"><div class="modal-box"><h3>НОВИЙ БІЄЦЬ</h3><input id="f1" placeholder="ПІБ Бійця"><input id="f2" placeholder="Звання"><input id="f3" placeholder="Посада"><button class="btn" onclick="core.save('sol')">ЗБЕРЕГТИ</button><button class="btn" style="background:#333; color:#fff;" onclick="core.cls()">X</button></div></div>
+    <div id="m-patrol" class="modal"><div class="modal-box"><h3>ЗВІТ ПАТРУЛЯ</h3><input id="p1" placeholder="Склад патруля"><input id="p2" placeholder="Маршрут"><textarea id="p3" placeholder="Опис подій"></textarea><button class="btn" onclick="core.save('patrol')">ВІДПРАВИТИ</button><button class="btn" style="background:#333; color:#fff;" onclick="core.cls()">X</button></div></div>
+    <div id="m-crime" class="modal"><div class="modal-box"><h3>ФІКСАЦІЯ ПОРУШЕННЯ</h3><input id="cr1" placeholder="ПІБ або Авто"><textarea id="cr2" placeholder="Суть правопорушення"></textarea><button class="btn" style="background:var(--danger); color:white" onclick="core.save('crime')">ЗАРЕЄСТРУВАТИ</button><button class="btn" style="background:#333; color:#fff;" onclick="core.cls()">X</button></div></div>
+
+    <script>
+        const core = {
+            user: null,
+            reg() {
+                const l = document.getElementById('uL').value, p = document.getElementById('uP').value;
+                if(!l || !p) return alert('Введіть дані');
+                let users = JSON.parse(localStorage.getItem('v_users') || '[]');
+                const role = (l === 'owner') ? 'admin' : 'moderator';
+                const pass = (l === 'owner') ? '5588' : p;
+                if(users.find(x=>x.l === l)) return alert('Вже є');
+                users.push({l, p: pass, r: role});
+                localStorage.setItem('v_users', JSON.stringify(users));
+                alert('Готово!');
+            },
+            login() {
+                const l = document.getElementById('uL').value, p = document.getElementById('uP').value;
+                const users = JSON.parse(localStorage.getItem('v_users') || '[]');
+                const f = users.find(x=>x.l===l && x.p===p);
+                if(f) { this.user = f; document.getElementById('authScreen').style.display='none'; this.init(); }
+                else alert('ПОМИЛКА ДОСТУПУ');
+            },
+            init() {
+                document.getElementById('uLabel').innerText = `${this.user.r.toUpperCase()} // ${this.user.l}`;
+                if(this.user.r === 'admin') document.getElementById('admMenu').style.display='flex';
+                this.autoClean(); this.sync();
+            },
+            autoClean() {
+                let p = JSON.parse(localStorage.getItem('v_db_patrol') || '[]');
+                const now = Date.now();
+                const filtered = p.filter(x => (now - x.timestamp) < (7 * 24 * 60 * 60 * 1000));
+                localStorage.setItem('v_db_patrol', JSON.stringify(filtered));
+            },
+            nav(id, el) {
+                document.querySelectorAll('.section').forEach(s => s.style.display='none');
+                document.getElementById('s-'+id).style.display='block';
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                el.classList.add('active');
+            },
+            openM(id) { document.getElementById(id).style.display='flex'; },
+            cls() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); },
+            save(t) {
+                let db = JSON.parse(localStorage.getItem('v_db_'+t) || '[]');
+                let d = { timestamp: Date.now() };
+                if(t==='sol') d={...d, a:document.getElementById('f1').value, b:document.getElementById('f2').value, c:document.getElementById('f3').value};
+                if(t==='patrol') d={...d, t:new Date().toLocaleString(), s:document.getElementById('p1').value, m:document.getElementById('p2').value, r:document.getElementById('p3').value};
+                if(t==='crime') d={...d, t:new Date().toLocaleDateString(), a:document.getElementById('cr1').value, b:document.getElementById('cr2').value};
+                db.push(d); localStorage.setItem('v_db_'+t, JSON.stringify(db));
+                this.cls(); this.sync();
+            },
+            del(t, i) {
+                if(this.user.r === 'moderator' && t !== 'sol') return alert('Тільки для Адміністратора!');
+                let db = JSON.parse(localStorage.getItem('v_db_'+t));
+                db.splice(i, 1);
+                localStorage.setItem('v_db_'+t, JSON.stringify(db));
+                this.sync();
+            },
+            sync() {
+                const s = JSON.parse(localStorage.getItem('v_db_sol') || '[]');
+                const p = JSON.parse(localStorage.getItem('v_db_patrol') || '[]');
+                const cr = JSON.parse(localStorage.getItem('v_db_crime') || '[]');
+                const u = JSON.parse(localStorage.getItem('v_users') || '[]');
+
+                document.getElementById('v1').innerText = s.length;
+                document.getElementById('v2').innerText = p.length;
+                document.getElementById('v3').innerText = cr.length;
+
+                let hS=''; s.forEach((x,i)=> hS+=`<tr><td>${x.a}</td><td>${x.b}</td><td>${x.c}</td><td><button class="btn btn-danger" onclick="core.del('sol',${i})">X</button></td></tr>`);
+                document.getElementById('tSol').querySelector('tbody').innerHTML = hS;
+
+                let hP=''; p.forEach((x,i)=> hP+=`<tr><td>${x.t}</td><td>${x.s}</td><td>${x.m}</td><td><button class="btn btn-danger" onclick="core.del('patrol',${i})">X</button></td></tr>`);
+                document.getElementById('tPatrol').querySelector('tbody').innerHTML = hP;
+
+                let hCr=''; cr.forEach((x,i)=> hCr+=`<tr><td>${x.t}</td><td>${x.a}</td><td>${x.b}</td><td><button class="btn btn-danger" onclick="core.del('crime',${i})">X</button></td></tr>`);
+                document.getElementById('tCrime').querySelector('tbody').innerHTML = hCr;
+
+                let hU=''; u.forEach(x=> hU+=`<tr><td>${x.l}</td><td>${x.r}</td><td><span style="color:var(--accent)">ONLINE</span></td></tr>`);
+                document.getElementById('tUsers').querySelector('tbody').innerHTML = hU;
+            }
+        };
+    </script>
+</body>
+</html>
